@@ -8,7 +8,7 @@ resource "kubernetes_namespace_v1" "photo-server" {
 
 resource "kubernetes_secret_v1" "photo-server-secrets" {
   metadata {
-    name      = "secrets"
+    name      = "photo-server-secrets"
     namespace = "photo-server"
     labels    = { app : "photo-server" }
   }
