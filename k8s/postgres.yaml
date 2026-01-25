@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: postgres-config
+  namespace: photo-server
 data:
   POSTGRES_DB: "immich"
   POSTGRES_PORT: "5432"
