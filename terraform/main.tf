@@ -14,9 +14,7 @@ resource "kubernetes_secret_v1" "photo-server-secrets" {
   }
 
   data = {
-    postgres_username = var.postgres_user
-    postgres_password = var.postgres_password
-    redis_password    = var.redis_password
-
+    POSTGRES_USER     = var.postgres_user
+    POSTGRES_PASSWORD = var.postgres_password
   }
 }

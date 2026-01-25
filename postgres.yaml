@@ -1,0 +1,100 @@
+# config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  POSTGRES_DB: "immich"
+  POSTGRES_PORT: "5432"
+---
+# PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: photo-server
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 60Gi
+  storageClassName: longhorn
+  volumeMode: Filesystem
+---
+# postgres statefulset
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: photo-server
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:18
+          ports:
+            - name: postgres
+              containerPort: 5432
+          envFrom:
+            - configMapRef:
+                - name: postgres-config
+            - secretRef:
+                name: photo-server-secrets
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - >
+                  pg_isready
+                  -h "localhost"
+                  -U "$POSTGRES_USER"
+                  -d "$POSTGRES_DB"
+                  -p "$POSTGRES_PORT"
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - >
+                  pg_isready
+                  -h "localhost"
+                  -U "$POSTGRES_USER"
+                  -d "$POSTGRES_DB"
+                  -p "$POSTGRES_PORT"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+---
+# postgres service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: photo-server
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
