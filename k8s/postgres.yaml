@@ -105,6 +105,11 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: postgres-pvc
+        - name: runtime-postgresql
+          emptyDir:
+            medium: Memory
+        - name: tmp
+          emptyDir: { }
       securityContext:
         fsGroup: 999
         fsGroupChangePolicy: "OnRootMismatch"
