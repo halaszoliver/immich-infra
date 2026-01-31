@@ -1,88 +1,93 @@
-# config
+# ConfigMap
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: postgres-config
+  name: redis-config
   namespace: photo-server
 data:
-  POSTGRES_DB: "immich"
-  POSTGRES_PORT: "5432"
+  redis.conf: |
+    appendonly yes
+    appendfsync everysec
+    dir /data
 ---
 # PVC
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgres-pvc
+  name: redis-pvc
   namespace: photo-server
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 60Gi
+      storage: 4Gi
   storageClassName: longhorn
   volumeMode: Filesystem
 ---
-# postgres statefulset
+# Redis StatefulSet
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgres
+  name: redis
   namespace: photo-server
 spec:
-  serviceName: postgres
+  serviceName: redis
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: redis
   template:
     metadata:
       labels:
-        app: postgres
+        app: redis
     spec:
       containers:
-        - name: postgres
-          image: postgres:18
-          ports:
-            - name: postgres
-              containerPort: 5432
+        - name: redis
+          image: redis:8
+          command:
+            - sh
+            - -c
+            - >
+              redis-server /usr/local/etc/redis/redis.conf
+              --requirepass "$REDIS_PASSWORD"
           envFrom:
-            - configMapRef:
-                name: postgres-config
             - secretRef:
                 name: photo-server-secrets
+          ports:
+            - containerPort: 6379
           volumeMounts:
             - name: data
-              mountPath: /var/lib/postgresql
+              mountPath: /data
+            - name: config
+              mountPath: /etc/redis
           readinessProbe:
             exec:
               command:
                 - sh
                 - -c
                 - >
-                  pg_isready
-                  -h "localhost"
-                  -U "$POSTGRES_USER"
-                  -d "$POSTGRES_DB"
-                  -p "$POSTGRES_PORT"
+                  redis-cli -a $REDIS_PASSWORD ping
+                  | grep -q PONG
             initialDelaySeconds: 10
             periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 6
           livenessProbe:
             exec:
               command:
                 - sh
                 - -c
                 - >
-                  pg_isready
-                  -h "localhost"
-                  -U "$POSTGRES_USER"
-                  -d "$POSTGRES_DB"
-                  -p "$POSTGRES_PORT"
-            initialDelaySeconds: 30
+                  redis-cli -a $REDIS_PASSWORD ping
+                  | grep -q PONG
+            initialDelaySeconds: 20
             periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
           securityContext:
-            runAsUser: 999
-            runAsGroup: 999
+            runAsUser: 1001
+            runAsGroup: 1001
             runAsNonRoot: true
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -91,31 +96,35 @@ spec:
             seccompProfile:
               type: RuntimeDefault
       volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: redis-pvc
+          configMap:
+            name: redis-config
         - name: data
           persistentVolumeClaim:
-            claimName: postgres-pvc
+            claimName: redis-pvc
       resources:
         requests:
           cpu: "250m"
           memory: "512Mi"
         limits:
-          cpu: "1"
+          cpu: "750m"
           memory: "1Gi"
       securityContext:
-        fsGroup: 999
-        fsGroupChangePolicy: "OnRootMismatch"
+        fsGroup: 1001
 ---
-# postgres service
+# Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: redis
   namespace: photo-server
 spec:
-  type: ClusterIP
+  clusterIP: None
   selector:
-    app: postgres
+    app: redis
   ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
+    - port: 6379
+      name: redis
+
