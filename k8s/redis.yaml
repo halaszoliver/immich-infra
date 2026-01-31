@@ -48,7 +48,7 @@ spec:
           command:
             - sh
             - -c
-            - >
+            - |
               redis-server /usr/local/etc/redis/redis.conf
               --requirepass "$REDIS_PASSWORD"
           envFrom:
@@ -60,31 +60,18 @@ spec:
             - name: data
               mountPath: /data
             - name: config
-              mountPath: /etc/redis
+              mountPath: /usr/local/etc/redis
+              readOnly: true
           readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - >
-                  redis-cli -a $REDIS_PASSWORD ping
-                  | grep -q PONG
-            initialDelaySeconds: 10
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
             periodSeconds: 5
-            timeoutSeconds: 2
-            failureThreshold: 6
           livenessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - >
-                  redis-cli -a $REDIS_PASSWORD ping
-                  | grep -q PONG
+            tcpSocket:
+              port: 6379
             initialDelaySeconds: 20
             periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 3
           securityContext:
             runAsUser: 1001
             runAsGroup: 1001
@@ -95,22 +82,21 @@ spec:
               drop: [ "ALL" ]
             seccompProfile:
               type: RuntimeDefault
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "750m"
+              memory: "1Gi"
+      terminationGracePeriodSeconds: 30
       volumes:
-        - name: config
-          persistentVolumeClaim:
-            claimName: redis-pvc
-          configMap:
-            name: redis-config
         - name: data
           persistentVolumeClaim:
             claimName: redis-pvc
-      resources:
-        requests:
-          cpu: "250m"
-          memory: "512Mi"
-        limits:
-          cpu: "750m"
-          memory: "1Gi"
+        - name: config
+          configMap:
+            name: redis-config
       securityContext:
         fsGroup: 1001
 ---
@@ -118,13 +104,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis
+  name: redis-service
   namespace: photo-server
 spec:
-  clusterIP: None
+  type: ClusterIP
   selector:
     app: redis
   ports:
-    - port: 6379
-      name: redis
+    - name: redis
+      port: 6379
+      targetPort: 6379
+
 

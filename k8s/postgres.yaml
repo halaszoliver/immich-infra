@@ -59,7 +59,7 @@ spec:
               command:
                 - sh
                 - -c
-                - >
+                - |
                   pg_isready
                   -h "localhost"
                   -U "$POSTGRES_USER"
@@ -72,7 +72,7 @@ spec:
               command:
                 - sh
                 - -c
-                - >
+                - |
                   pg_isready
                   -h "localhost"
                   -U "$POSTGRES_USER"
@@ -90,17 +90,17 @@ spec:
               drop: [ "ALL" ]
             seccompProfile:
               type: RuntimeDefault
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: postgres-pvc
-      resources:
-        requests:
-          cpu: "250m"
-          memory: "512Mi"
-        limits:
-          cpu: "1"
-          memory: "1Gi"
       securityContext:
         fsGroup: 999
         fsGroupChangePolicy: "OnRootMismatch"
