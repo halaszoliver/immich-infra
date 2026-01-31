@@ -63,12 +63,7 @@ spec:
               command:
                 - sh
                 - -c
-                - |
-                  pg_isready
-                  -h "localhost"
-                  -U "$POSTGRES_USER"
-                  -d "$POSTGRES_DB"
-                  -p "$POSTGRES_PORT"
+                - pg_isready -h /var/run/postgresql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -p "$POSTGRES_PORT"
             initialDelaySeconds: 10
             periodSeconds: 5
           livenessProbe:
@@ -76,12 +71,7 @@ spec:
               command:
                 - sh
                 - -c
-                - |
-                  pg_isready
-                  -h "localhost"
-                  -U "$POSTGRES_USER"
-                  -d "$POSTGRES_DB"
-                  -p "$POSTGRES_PORT"
+                - pg_isready -h /var/run/postgresql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -p "$POSTGRES_PORT"
             initialDelaySeconds: 30
             periodSeconds: 10
           securityContext:
