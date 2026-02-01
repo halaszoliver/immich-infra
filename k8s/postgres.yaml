@@ -1,4 +1,4 @@
-# config
+# base config
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,6 +7,17 @@ metadata:
 data:
   POSTGRES_DB: "immich"
   POSTGRES_PORT: "5432"
+---
+#db init config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-init-config
+  namespace: photo-server
+data:
+  init.sql: |
+    CREATE
+    EXTENSION IF NOT EXISTS vchord CASCADE;
 ---
 # PVC
 apiVersion: v1
@@ -19,7 +30,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 60Gi
+      storage: 5Gi
   storageClassName: longhorn
   volumeMode: Filesystem
 ---
@@ -42,7 +53,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:18
+          image: tensorchord/vchord-postgres:pg18-v1.0.0
           ports:
             - name: postgres
               containerPort: 5432
@@ -58,6 +69,8 @@ spec:
               mountPath: /var/run/postgresql
             - name: tmp
               mountPath: /tmp
+            - name: init-db
+              mountPath: /docker-entrypoint-initdb.d
           readinessProbe:
             exec:
               command:
@@ -100,6 +113,9 @@ spec:
             medium: Memory
         - name: tmp
           emptyDir: { }
+        - name: init-db
+          configMap:
+            name: db-init-config
       securityContext:
         fsGroup: 999
         fsGroupChangePolicy: "OnRootMismatch"
