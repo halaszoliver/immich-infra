@@ -53,7 +53,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: tensorchord/vchord-postgres:pg18-v1.0.0
+          image: tensorchord/vchord-postgres:latest
           ports:
             - name: postgres
               containerPort: 5432
@@ -124,7 +124,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: postgres-service
   namespace: photo-server
 spec:
   type: ClusterIP

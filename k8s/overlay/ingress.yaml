@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: immich-ingress
+  namespace: photo-server
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: photos.oliver-halasz.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: immich-server-service
+                port:
+                  number: 3001

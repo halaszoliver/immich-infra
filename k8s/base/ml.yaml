@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich-ml-cache
+  namespace: photo-server
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: longhorn
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: immich-ml
+  namespace: photo-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: immich-ml
+  template:
+    metadata:
+      labels:
+        app: immich-ml
+    spec:
+      containers:
+        - name: immich-ml
+          image: ghcr.io/immich-app/immich-machine-learning:latest
+          ports:
+            - containerPort: 3003
+          volumeMounts:
+            - name: model-cache
+              mountPath: /cache
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+
+      volumes:
+        - name: model-cache
+          persistentVolumeClaim:
+            claimName: immich-ml-cache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: immich-ml-service
+  namespace: photo-server
+spec:
+  selector:
+    app: immich-server
+  ports:
+    - name: http
+      port: 3003
+      targetPort: 3003
