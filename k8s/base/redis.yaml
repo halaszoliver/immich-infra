@@ -4,6 +4,9 @@ kind: ConfigMap
 metadata:
   name: redis-config
   namespace: photo-server
+  labels:
+    app.kubernetes.io/part-of: photo-server
+    app.kubernetes.io/component: redis
 data:
   redis.conf: |
     appendonly yes
@@ -16,6 +19,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: redis-pvc
   namespace: photo-server
+  labels:
+    app.kubernetes.io/part-of: photo-server
+    app.kubernetes.io/component: redis
 spec:
   accessModes:
     - ReadWriteOnce
@@ -31,6 +37,9 @@ kind: StatefulSet
 metadata:
   name: redis
   namespace: photo-server
+  labels:
+    app.kubernetes.io/part-of: photo-server
+    app.kubernetes.io/component: redis
 spec:
   serviceName: redis
   replicas: 1
@@ -106,6 +115,9 @@ kind: Service
 metadata:
   name: redis
   namespace: photo-server
+  labels:
+    app.kubernetes.io/part-of: photo-server
+    app.kubernetes.io/component: redis
 spec:
   type: ClusterIP
   selector:

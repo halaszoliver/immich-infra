@@ -4,6 +4,9 @@ kind: ConfigMap
 metadata:
   name: postgres-config
   namespace: photo-server
+  labels:
+    app.kubernetes.io/part-of: photo-server
+    app.kubernetes.io/component: postgres
 data:
   POSTGRES_DB: "immich"
   POSTGRES_PORT: "5432"
@@ -14,6 +17,9 @@ kind: ConfigMap
 metadata:
   name: db-init-config
   namespace: photo-server
+  labels:
+    app.kubernetes.io/part-of: photo-server
+    app.kubernetes.io/component: postgres
 data:
   init.sql: |
     CREATE
@@ -25,6 +31,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
   namespace: photo-server
+  labels:
+    app.kubernetes.io/part-of: photo-server
+    app.kubernetes.io/component: postgres
 spec:
   accessModes:
     - ReadWriteOnce
@@ -40,6 +49,9 @@ kind: StatefulSet
 metadata:
   name: postgres
   namespace: photo-server
+  labels:
+    app.kubernetes.io/part-of: photo-server
+    app.kubernetes.io/component: postgres
 spec:
   serviceName: postgres
   replicas: 1
@@ -126,6 +138,9 @@ kind: Service
 metadata:
   name: postgres
   namespace: photo-server
+  labels:
+    app.kubernetes.io/part-of: photo-server
+    app.kubernetes.io/component: postgres
 spec:
   type: ClusterIP
   selector:
