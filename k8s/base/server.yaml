@@ -4,10 +4,10 @@ metadata:
   name: server-config
   namespace: photo-server
 data:
-  DB_HOSTNAME: postgres-service
+  DB_HOSTNAME: postgres
   DB_DATABASE_NAME: immich
   DB_PORT: "5432"
-  REDIS_HOSTNAME: redis-service
+  REDIS_HOSTNAME: redis
   REDIS_PORT: "6379"
   IMMICH_MACHINE_LEARNING_URL: http://immich-ml:3003
 ---
@@ -93,7 +93,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: immich-server-service
+  name: immich-server
   namespace: photo-server
 spec:
   selector:

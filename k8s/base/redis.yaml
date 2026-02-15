@@ -104,7 +104,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis-service
+  name: redis
   namespace: photo-server
 spec:
   type: ClusterIP
