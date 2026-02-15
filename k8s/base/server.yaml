@@ -81,14 +81,14 @@ spec:
               memory: "512Mi"
           livenessProbe:
             httpGet:
-              path: /
+              path: /api/server/ping
               port: 2283
             periodSeconds: 15
             timeoutSeconds: 30
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/server/ping
               port: 2283
             periodSeconds: 15
             timeoutSeconds: 45
