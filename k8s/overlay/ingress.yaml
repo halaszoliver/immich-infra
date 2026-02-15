@@ -6,7 +6,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: photos.oliver-halasz.com
+    - host: photos.oliverhalasz.com
       http:
         paths:
           - path: /
