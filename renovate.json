@@ -1,0 +1,32 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    ":dependencyDashboard",
+    ":ignoreUnstable",
+    ":separateMajorReleases",
+    "replacements:all",
+    "workarounds:all"
+  ],
+  "packageRules": [
+    {
+      "description": "Group all minor and patch updates together",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "all non-major versions",
+      "groupSlug": "all-minor-patch",
+      "automerge": true
+    },
+    {
+      "description": "Major updates without auto-merge",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false
+    }
+  ],
+  "terraform": {
+    "enabled": false
+  }
+}
