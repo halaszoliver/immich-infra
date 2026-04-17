@@ -8,7 +8,7 @@ images:
   - name: redis
     newTag: "8"
   - name: ghcr.io/immich-app/immich-server
-    newTag: "v2.6.3"
+    newTag: "v2.7.5"
   - name: ghcr.io/immich-app/immich-machine-learning
-    newTag: "v2.6.3"
+    newTag: "v2.7.5"
 
